@@ -86,13 +86,14 @@ function start({ dataUri, rendererName, canvas }) {
   // Fetch and demux the media data.
   const demuxer = new MP4Demuxer(dataUri, {
     onConfig(config) {
+      const codec = `hev1.${config.codec.split(".").slice(1).join(".")}`;
       setStatus(
         "decode",
-        `${config.codec} @ ${config.codedWidth}x${config.codedHeight}`
+        `${codec} @ ${config.codedWidth}x${config.codedHeight}`
       );
       decoder.configure({
         ...config,
-        codec: `hev1.${config.codec.split(".").slice(1).join(".")}`,
+        codec,
       });
     },
     onChunk(chunk) {
