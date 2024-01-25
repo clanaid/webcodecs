@@ -1,4 +1,9 @@
-importScripts("demuxer_mp4.js", "renderer_2d.js", "renderer_webgl.js", "renderer_webgpu.js");
+importScripts(
+  "demuxer_mp4.js",
+  "renderer_2d.js",
+  "renderer_webgl.js",
+  "renderer_webgpu.js"
+);
 
 // Status UI. Messages are batched per animation frame.
 let pendingStatus = null;
@@ -7,7 +12,7 @@ function setStatus(type, message) {
   if (pendingStatus) {
     pendingStatus[type] = message;
   } else {
-    pendingStatus = {[type]: message};
+    pendingStatus = { [type]: message };
     self.requestAnimationFrame(statusAnimationFrame);
   }
 }
@@ -41,7 +46,7 @@ function renderAnimationFrame() {
 }
 
 // Startup.
-function start({dataUri, rendererName, canvas}) {
+function start({ dataUri, rendererName, canvas }) {
   // Pick a renderer to use.
   switch (rendererName) {
     case "2d":
@@ -75,21 +80,29 @@ function start({dataUri, rendererName, canvas}) {
     },
     error(e) {
       setStatus("decode", e);
-    }
+    },
   });
 
   // Fetch and demux the media data.
   const demuxer = new MP4Demuxer(dataUri, {
     onConfig(config) {
-      setStatus("decode", `${config.codec} @ ${config.codedWidth}x${config.codedHeight}`);
-      decoder.configure(config);
+      setStatus(
+        "decode",
+        `${config.codec} @ ${config.codedWidth}x${config.codedHeight}`
+      );
+      decoder.configure({
+        ...config,
+        codec: `hev1.${config.codec.split(".").slice(1).join(".")}`,
+      });
     },
     onChunk(chunk) {
       decoder.decode(chunk);
     },
-    setStatus
+    setStatus,
   });
 }
 
 // Listen for the start request.
-self.addEventListener("message", message => start(message.data), {once: true});
+self.addEventListener("message", (message) => start(message.data), {
+  once: true,
+});
